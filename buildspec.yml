@@ -2,54 +2,41 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      php: 8.2
     commands:
-      - echo "Updating system and installing required packages"
-      - sudo yum update -y
-      - sudo amazon-linux-extras install -y epel
-      - sudo yum install -y https://rpms.remirepo.net/enterprise/remi-release-7.rpm
-      - sudo yum-config-manager --enable remi-php82
-      - sudo yum install -y php php-cli php-fpm php-xml php-mbstring php-json php-mysqlnd php-zip php-gd php-bcmath php-intl php-soap
-
-      - echo "PHP 8.2 and extensions are installed"
-      - php -v
-      
-      - echo "Installing Composer"
+      - echo Installing PHP 8.1 and necessary extensions
+      - sudo apt-get update
+      - sudo apt-get install -y php8.1-cli php8.1-xml php8.1-mbstring php8.1-curl php8.1-zip php8.1-mysql php8.1-gd php8.1-bcmath
+      - echo Installing Composer
       - curl -sS https://getcomposer.org/installer | php
-      - sudo mv composer.phar /usr/local/bin/composer
-      - composer --version
-
-      - echo "Installing Node.js for asset compilation"
-      - curl -sL https://rpm.nodesource.com/setup_16.x | sudo bash -
-      - sudo yum install -y nodejs
-      - node --version
-      - npm --version
-
+      - mv composer.phar /usr/local/bin/composer
+      - echo Installing Node.js
+      - curl -sL https://deb.nodesource.com/setup_16.x | bash -
+      - sudo apt-get install -y nodejs
   pre_build:
     commands:
-      - echo "Pre-build phase - setting up Laravel environment"
+      - echo Starting pre-build phase...
       - cp .env.example .env
       - composer install --no-interaction --prefer-dist --optimize-autoloader
       - npm install
       - npm run prod
       - php artisan key:generate
-
   build:
     commands:
-      - echo "Build phase - executing Laravel migrations and other tasks"
+      - echo Build started on `date`
       - php artisan migrate --force
-
   post_build:
     commands:
-      - echo "Post-build phase - caching configurations"
+      - echo Build completed on `date`
+      - echo Post-build phase...
       - php artisan config:cache
       - php artisan route:cache
       - php artisan view:cache
-
 artifacts:
   files:
     - '**/*'
   base-directory: 'public'
-
 cache:
   paths:
     - '/root/.composer/cache/**/*'
