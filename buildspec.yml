@@ -13,6 +13,7 @@ phases:
     commands:
       - composer install
       - npm install
+      - composer update
 artifacts:
   files:
     - '**/*'
