@@ -11,9 +11,10 @@ phases:
       - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
   pre_build:
     commands:
+      - rm -rf composer.lock
+      - rm -rf vendor 
       - composer install
       - npm install
-      - composer update
 artifacts:
   files:
     - '**/*'
