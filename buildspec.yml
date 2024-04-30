@@ -1,44 +1,22 @@
-version: 0.2
-
 phases:
   install:
     runtime-versions:
-      php: 8.2
+      php: 8.1 
     commands:
-      - echo Installing PHP 8.1 and necessary extensions
-      - sudo apt-get update
-      - sudo apt-get install -y php8.1-cli php8.1-xml php8.1-mbstring php8.1-curl php8.1-zip php8.1-mysql php8.1-gd php8.1-bcmath
-      - echo Installing Composer
-      - curl -sS https://getcomposer.org/installer | php
-      - mv composer.phar /usr/local/bin/composer
-      - echo Installing Node.js
-      - curl -sL https://deb.nodesource.com/setup_16.x | bash -
-      - sudo apt-get install -y nodejs
+      - apt-get update -y
+      - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+      - apt-get install -y libpq-dev libzip-dev
+      - apt-get install -y php-pgsql
+      - curl -sS https://getcomposer.org/installer -o composer-setup.php 
+      - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
   pre_build:
     commands:
-      - echo Starting pre-build phase...
-      - cp .env.example .env
-      - composer install --no-interaction --prefer-dist --optimize-autoloader
+      - composer install
       - npm install
-      - npm run prod
-      - php artisan key:generate
-  build:
-    commands:
-      - echo Build started on `date`
-      - php artisan migrate --force
-  post_build:
-    commands:
-      - echo Build completed on `date`
-      - echo Post-build phase...
-      - php artisan config:cache
-      - php artisan route:cache
-      - php artisan view:cache
 artifacts:
   files:
     - '**/*'
-  base-directory: 'public'
-cache:
-  paths:
-    - '/root/.composer/cache/**/*'
-    - 'node_modules/**/*'
-    - 'vendor/**/*'
+  name: $(date +%Y-%m-%dT%H:%M:%S).zip
+proxy:
+  upload-artifacts: yes
+  logs: yes
